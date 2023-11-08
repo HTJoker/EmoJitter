@@ -4,8 +4,11 @@ import { SignOutButton, useUser, SignInButton } from "@clerk/nextjs";
 import { api } from "~/utils/api";
 
 export default function Home() {
-  const { data } = api.post.getAll.useQuery();
+  const { data, isLoading } = api.post.getAll.useQuery();
   const user = useUser();
+
+  if (isLoading) return <div>Loading...</div>;
+  if (!data) return <div>Something went wrong</div>;
 
   return (
     <>
@@ -16,9 +19,23 @@ export default function Home() {
       </Head>
       <main className="flex h-screen justify-center">
         <div className="w-full border-x border-slate-200 md:max-w-2xl">
-          <div>{user.isSignedIn ? <SignOutButton /> : <SignInButton />}</div>
-          <div>
-            {data?.map((post) => <div key={post.id}>{post.content}</div>)}
+          <div className="flex border-b border-slate-400 p-4 ">
+            {user.isSignedIn ? (
+              <div className="flex justify-center">
+                <SignOutButton />
+              </div>
+            ) : (
+              <div className="flex justify-center">
+                <SignInButton />
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col">
+            {data?.map((post) => (
+              <div key={post.id} className="border-b border-slate-400 p-8">
+                {post.content}
+              </div>
+            ))}
           </div>
         </div>
       </main>
