@@ -2,9 +2,14 @@ import Head from "next/head";
 import Image from "next/image";
 import { useUser, SignInButton, SignOutButton } from "@clerk/nextjs";
 
-import { api } from "~/utils/api";
+import { type RouterOutputs, api } from "~/utils/api";
+import { type NextPage } from "next";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 
-const CreatePostWizard = () => {
+dayjs.extend(relativeTime);
+
+const CreatePostWizard: NextPage = () => {
   const { user } = useUser();
 
   if (!user) return null;
@@ -30,7 +35,33 @@ const CreatePostWizard = () => {
   );
 };
 
-export default function Home() {
+type PostWithUser = RouterOutputs["post"]["getAll"][number];
+
+const PostView = ({ post, author }: PostWithUser) => {
+  return (
+    <div key={post.id} className="flex gap-3 border-b border-slate-400 p-4">
+      <Image
+        src={author.profilePicture}
+        alt="profile image"
+        width={300}
+        height={300}
+        className="h-14 w-14 rounded-full"
+      />
+      <div className="flex flex-col">
+        <div className="flex items-center gap-1 font-semibold text-slate-300">
+          <span>{`@${author.username}`}</span>
+          <span className=" text-sm text-slate-400">
+            {" "}
+            - {dayjs(post.createdAt).fromNow()}
+          </span>
+        </div>
+        <span>{post.content}</span>
+      </div>
+    </div>
+  );
+};
+
+const Home: NextPage = () => {
   const { data, isLoading } = api.post.getAll.useQuery();
   const user = useUser();
 
@@ -56,14 +87,14 @@ export default function Home() {
             )}
           </div>
           <div className="flex flex-col">
-            {data?.map(({ post, author }) => (
-              <div key={post.id} className="border-b border-slate-400 p-8">
-                {post.content}
-              </div>
+            {data.map((fullPost) => (
+              <PostView {...fullPost} key={fullPost.post.id} />
             ))}
           </div>
         </div>
       </main>
     </>
   );
-}
+};
+
+export default Home;
