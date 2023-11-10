@@ -11,6 +11,7 @@ import LoadingPage from "~/components/loading";
 
 dayjs.extend(relativeTime);
 
+
 const CreatePostWizard: NextPage = () => {
   const { user } = useUser();
   if (!user) return null;
@@ -35,6 +36,7 @@ const CreatePostWizard: NextPage = () => {
     </div>
   );
 };
+
 
 type PostWithUser = RouterOutputs["post"]["getAll"][number];
 
@@ -65,6 +67,7 @@ const PostView = ({ post, author }: PostWithUser) => {
   );
 };
 
+
 const Feed = () => {
   const { data, isLoading: postsLoading } = api.post.getAll.useQuery();
 
@@ -86,11 +89,10 @@ const Feed = () => {
   );
 };
 
+
 const Home: NextPage = () => {
   const { isLoaded: userLoaded, isSignedIn } = useUser();
-
   api.post.getAll.useQuery();
-
   if (!userLoaded) return <div />;
 
   return (
