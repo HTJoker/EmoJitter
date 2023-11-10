@@ -62,12 +62,33 @@ const PostView = ({ post, author }: PostWithUser) => {
   );
 };
 
-const Home: NextPage = () => {
-  const { data, isLoading } = api.post.getAll.useQuery();
-  const user = useUser();
+const Feed = () => {
+  const { data, isLoading: postsLoading } = api.post.getAll.useQuery();
 
-  if (isLoading) return <LoadingPage/>;
+  if (postsLoading)
+    return (
+      <div className="flex grow">
+        <LoadingPage />
+      </div>
+    );
+
   if (!data) return <div>Something went wrong</div>;
+
+  return (
+    <div className="flex grow flex-col overflow-y-scroll">
+      {[...data, ...data, ...data, ...data].map((fullPost) => (
+        <PostView {...fullPost} key={fullPost.post.id} />
+      ))}
+    </div>
+  );
+};
+
+const Home: NextPage = () => {
+  const { isLoaded: userLoaded, isSignedIn } = useUser();
+
+  api.post.getAll.useQuery();
+
+  if (!userLoaded) return <div />;
 
   return (
     <>
@@ -79,19 +100,14 @@ const Home: NextPage = () => {
       <main className="flex h-screen justify-center">
         <div className="w-full border-x border-slate-200 md:max-w-2xl">
           <div className="flex border-b border-slate-400 p-4 ">
-            {user.isSignedIn ? (
-              <CreatePostWizard />
-            ) : (
-              <div className="flex justify-center">
-                <SignInButton />
-              </div>
-            )}
+          {!isSignedIn && (
+          <div className="flex justify-center">
+            <SignInButton />
           </div>
-          <div className="flex flex-col">
-            {data.map((fullPost) => (
-              <PostView {...fullPost} key={fullPost.post.id} />
-            ))}
+        )}
+        {isSignedIn && <CreatePostWizard />}
           </div>
+          <Feed />
         </div>
       </main>
     </>
