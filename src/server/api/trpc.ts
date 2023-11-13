@@ -6,7 +6,7 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { getAuth } from "@clerk/nextjs/dist/types/server-helpers.server";
+import { getAuth } from "@clerk/nextjs/server";
 import { TRPCError, initTRPC } from "@trpc/server";
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 import superjson from "superjson";
@@ -32,11 +32,11 @@ export const createTRPCContext = (opts: CreateNextContextOptions) => {
   const { req } = opts;
   const sesh = getAuth(req);
 
-  const user = sesh.actor;
+  const userId = sesh.userId;
 
   return {
     db,
-    currentUser: user,
+    userId,
   };
 };
 
@@ -86,7 +86,7 @@ export const createTRPCRouter = t.router;
 export const publicProcedure = t.procedure;
 
 const enforceUserIsAuth = t.middleware(async ({ ctx, next }) => {
-  if (!ctx.currentUser) {
+  if (!ctx.userId) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "You must be logged in to perform this action.",
@@ -95,9 +95,9 @@ const enforceUserIsAuth = t.middleware(async ({ ctx, next }) => {
 
   return next({
     ctx: {
-      session: ctx.currentUser,
+      userId: ctx.userId,
     },
   });
 });
 
-export const privateProcedure = publicProcedure.use(enforceUserIsAuth);
+export const privateProcedure = t.procedure.use(enforceUserIsAuth);

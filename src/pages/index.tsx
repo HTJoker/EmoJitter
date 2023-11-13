@@ -1,7 +1,8 @@
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
-import { useUser, SignInButton, SignOutButton } from "@clerk/nextjs";
+import { useUser, SignInButton } from "@clerk/nextjs";
+import { useState } from "react";
 
 import { type RouterOutputs, api } from "~/utils/api";
 import { type NextPage } from "next";
@@ -11,10 +12,20 @@ import LoadingPage from "~/components/loading";
 
 dayjs.extend(relativeTime);
 
-
 const CreatePostWizard: NextPage = () => {
+  const [input, setInput] = useState("");
+
+  const ctx = api.useContext();
+
   const { user } = useUser();
   if (!user) return null;
+
+  const { mutate, isLoading: isPosting } = api.post.create.useMutation({
+    onSuccess: () => {
+      setInput("");
+      void ctx.post.getAll.invalidate()
+    },
+  });
 
   return (
     <div className="flex w-full items-center gap-4">
@@ -29,14 +40,21 @@ const CreatePostWizard: NextPage = () => {
         type="text"
         placeholder="Type some emojis"
         className="grow bg-transparent outline-none"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            if (input !== "") {
+              mutate({ content: input });
+            }
+          }
+        }}
+        disabled={isPosting}
       />
-      <div>
-        <SignOutButton />
-      </div>
+      <button onClick={() => mutate({ content: input })}>Post</button>
     </div>
   );
 };
-
 
 type PostWithUser = RouterOutputs["post"]["getAll"][number];
 
@@ -67,7 +85,6 @@ const PostView = ({ post, author }: PostWithUser) => {
   );
 };
 
-
 const Feed = () => {
   const { data, isLoading: postsLoading } = api.post.getAll.useQuery();
 
@@ -88,7 +105,6 @@ const Feed = () => {
     </div>
   );
 };
-
 
 const Home: NextPage = () => {
   const { isLoaded: userLoaded, isSignedIn } = useUser();
