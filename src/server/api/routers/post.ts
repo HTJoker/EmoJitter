@@ -20,7 +20,6 @@ const ratelimit = new Ratelimit({
 });
 
 
-
 export const postRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
     const post = await ctx.db.post.findMany({

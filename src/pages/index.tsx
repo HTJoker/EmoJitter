@@ -1,12 +1,13 @@
 import Image from "next/image";
 import { useUser, SignInButton } from "@clerk/nextjs";
 import { useState } from "react";
-import PostView from "~/components/postview";
+import PostView from "~/components/postView";
 
 import { type NextPage } from "next";
 import LoadingPage, { LoadingSpinner } from "~/components/loading";
 import toast from "react-hot-toast";
 import { api } from "~/utils/api";
+import { PageLayout } from "~/components/layout";
 
 const CreatePostWizard: NextPage = () => {
   const [input, setInput] = useState("");
@@ -95,21 +96,17 @@ const Home: NextPage = () => {
   if (!userLoaded) return <div />;
 
   return (
-    <>
-      <main className="flex h-screen justify-center">
-        <div className="w-full border-x border-slate-200 md:max-w-2xl">
-          <div className="flex border-b border-slate-400 p-4 ">
-            {!isSignedIn && (
-              <div className="flex justify-center">
-                <SignInButton />
-              </div>
-            )}
-            {isSignedIn && <CreatePostWizard />}
+    <PageLayout>
+      <div className="flex border-b border-slate-400 p-4 ">
+        {!isSignedIn && (
+          <div className="flex justify-center">
+            <SignInButton />
           </div>
-          <Feed />
-        </div>
-      </main>
-    </>
+        )}
+        {isSignedIn && <CreatePostWizard />}
+      </div>
+      <Feed />
+    </PageLayout>
   );
 };
 
