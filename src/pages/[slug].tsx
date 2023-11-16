@@ -1,6 +1,7 @@
 import type { GetStaticProps, NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
+import { Suspense } from "react";
 import { PageLayout } from "~/components/layout";
 import LoadingPage from "~/components/loading";
 import PostView from "~/components/postView";
@@ -16,7 +17,7 @@ const ProfileFeed = (props: { userId: string }) => {
   if (!data || data.length === 0) return <div>User Has Not Posted</div>;
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col overflow-y-scroll">
       {data.map((fullPost) => (
         <PostView {...fullPost} key={fullPost.post.id} />
       ))}

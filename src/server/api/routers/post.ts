@@ -64,7 +64,7 @@ export const postRouter = createTRPCRouter({
         where: {
           authorId: input.userId,
         },
-        take: 5,
+        take: 100,
         orderBy: [{ createdAt: "desc" }],
       }).then(addUserDataToPost),
     ),
